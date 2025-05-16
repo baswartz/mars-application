@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 
+import dynamic from 'next/dynamic';
 import { z } from 'zod'
 import { FormDataSchema } from '@/lib/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,26 +28,11 @@ const steps = [
     fields: ['declaration', 'emergencyContact', 'medicalConditions']
   }
 ]
-function Starfield({ count = 100 }) {
-    const stars = Array.from({ length: count });
-    return (
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {stars.map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-white opacity-80"
-            style={{
-              width: `${Math.random() * 2 + 1}px`,
-              height: `${Math.random() * 2 + 1}px`,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              boxShadow: `0 0 6px 2px #00bfff66`, // blue glow
-            }}
-          />
-        ))}
-      </div>
-    );
-  }
+
+const Starfield = dynamic(
+    () => import('@/components/Starfield'),
+    { ssr: false }
+  );
 
 export default function Form() {
   const [previousStep, setPreviousStep] = useState(0)
@@ -94,6 +80,8 @@ export default function Form() {
     }
   }
 
+  const formRef = useRef<HTMLFormElement>(null);
+
   return (
     <>
         <div className="fixed inset-0 -z-10 bg-black">
@@ -110,42 +98,68 @@ export default function Form() {
         ) : (
             <>
                 {/* Progress Steps */}
-                <nav aria-label='Progress'>
-                    <ol role='list' className='space-y-4 md:flex md:space-x-8 md:space-y-0'>
-                    {steps.map((step, index) => (
-                        <li key={step.name} className='md:flex-1'>
-                        {currentStep > index ? (
-                            <div className='group flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4'>
-                            <span className='text-sm font-medium text-sky-600 transition-colors '>
-                                {step.id}
-                            </span>
-                            <span className='text-sm font-medium'>{step.name}</span>
-                            </div>
-                        ) : currentStep === index ? (
+                <nav aria-label="Progress" className="mb-8">
+                    <ol role="list" className="flex items-center">
+                        {steps.map((step, index) => {
+                        const isComplete = currentStep > index;
+                        const isCurrent = currentStep === index;
+                        return (
+                            <li key={step.name} className="relative flex-1 flex items-center">
                             <div
-                            className='flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4'
-                            aria-current='step'
+                                className={`
+                                flex items-center w-full px-4 py-2 border
+                                ${isCurrent
+                                    ? 'border-blue-500 bg-blue-900/20'
+                                    : isComplete
+                                    ? 'border-green-500 bg-green-900/10'
+                                    : 'border-gray-700 bg-black'}
+                                rounded-lg transition-colors
+                                `}
                             >
-                            <span className='text-sm font-medium text-sky-600'>
-                                {step.id}
-                            </span>
-                            <span className='text-sm font-medium'>{step.name}</span>
+                                {/* Number or Checkmark and Stage */}
+                                <div className="flex items-center mr-4">
+                                <div
+                                    className={`
+                                    flex items-center justify-center w-8 h-8 rounded-full text-base font-bold
+                                    ${isCurrent
+                                        ? 'bg-blue-500 text-white'
+                                        : isComplete
+                                        ? 'bg-green-500 text-white'
+                                        : 'bg-gray-800 text-blue-300 border border-blue-900'}
+                                    `}
+                                >
+                                    {isComplete ? (
+                                    // Checkmark for completed steps
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    ) : (
+                                    index + 1
+                                    )}
+                                </div>
+                                <span className={`ml-2 text-xs font-semibold tracking-wide uppercase ${isCurrent ? 'text-blue-400' : isComplete ? 'text-green-400' : 'text-gray-400'}`}>
+                                    {step.id}
+                                </span>
+                                </div>
+                                {/* Step Name */}
+                                <span className={`text-sm font-medium ${isCurrent ? 'text-white' : isComplete ? 'text-green-200' : 'text-gray-300'}`}>
+                                {step.name}
+                                </span>
                             </div>
-                        ) : (
-                            <div className='group flex w-full flex-col border-l-4 border-gray-200 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4'>
-                            <span className='text-sm font-medium text-white-500 transition-colors'>
-                                {step.id}
-                            </span>
-                            <span className='text-sm font-medium'>{step.name}</span>
-                            </div>
-                        )}
-                        </li>
-                    ))}
+                            {/* Connector */}
+                            {index < steps.length - 1 && (
+                                <div className="flex-1 h-0.5 bg-gray-700 mx-2" aria-hidden="true" />
+                            )}
+                            </li>
+                        );
+                        })}
                     </ol>
                 </nav>
 
+
+
                 {/* Form */}
-                <form className='mt-8 py-8' onSubmit={handleSubmit(processForm)}>
+                <form ref={formRef} className='mt-8 py-8' onSubmit={handleSubmit(processForm)}>
                     {/* Stage 1: Personal Information */}
                     {currentStep === 0 && (
                     <motion.div
@@ -437,64 +451,58 @@ export default function Form() {
                         </p>
                     </motion.div>
                     )}
-
-                    {/* Submit Button - Always visible, only enabled if form is valid */}
-                    <div className='mt-8 flex justify-end'>
-                    <button
-                        type='submit'
-                        disabled={!isValid}
-                        className='rounded bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50'
-                    >
-                        Submit
-                    </button>
-                    </div>
                 </form>
 
-                {/* Navigation */}
-                <div className='mt-8 pt-5'>
-                    <div className='flex justify-between'>
-                    <button
-                        type='button'
+                {/* Fixed Navigation */}
+                <div className="fixed bottom-0 left-0 w-full bg-black/70 z-50 py-4">
+                    <div className="flex justify-between items-center max-w-2xl mx-auto px-4 gap-4">
+                        {/* Previous Button */}
+                        <button
+                        type="button"
                         onClick={prev}
                         disabled={currentStep === 0}
-                        className='rounded bg-white px-2 py-1 text-sm font-semibold text-sky-900 shadow-sm ring-1 ring-inset ring-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-50'
-                    >
-                        <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        strokeWidth='1.5'
-                        stroke='currentColor'
-                        className='h-6 w-6'
+                        className="rounded bg-white px-2 py-1 text-sm font-semibold text-sky-900 shadow-sm ring-1 ring-inset ring-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                        <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            d='M15.75 19.5L8.25 12l7.5-7.5'
-                        />
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="currentColor"
+                            className="h-6 w-6"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                         </svg>
-                    </button>
-                    <button
-                        type='button'
+                        </button>
+
+                        {/* Submit Button - Center */}
+                        <button
+                        type="button"
+                        disabled={!isValid}
+                        onClick={() => formRef.current?.requestSubmit()}
+                        className="rounded bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50 flex-grow max-w-[200px]"
+                        >
+                        Submit
+                        </button>
+
+                        {/* Next Button */}
+                        <button
+                        type="button"
                         onClick={next}
                         disabled={currentStep === steps.length - 1}
-                        className='rounded bg-white px-2 py-1 text-sm font-semibold text-sky-900 shadow-sm ring-1 ring-inset ring-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-50'
-                    >
-                        <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        strokeWidth='1.5'
-                        stroke='currentColor'
-                        className='h-6 w-6'
+                        className="rounded bg-white px-2 py-1 text-sm font-semibold text-sky-900 shadow-sm ring-1 ring-inset ring-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                        <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            d='M8.25 4.5l7.5 7.5-7.5 7.5'
-                        />
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="currentColor"
+                            className="h-6 w-6"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                         </svg>
-                    </button>
+                        </button>
                     </div>
                 </div>
             </>
