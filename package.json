@@ -9,10 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@hookform/resolvers": "^5.0.1",
+    "@mui/material": "^7.1.0",
+    "@mui/x-date-pickers": "^8.3.1",
+    "@mui/x-date-pickers-pro": "^8.3.1",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "framer-motion": "^12.11.4",
     "next": "15.3.2",
     "react": "^19.0.0",
+    "react-date-range": "^2.0.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.3",
     "zod": "^3.24.4"

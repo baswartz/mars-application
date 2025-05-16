@@ -2,6 +2,12 @@
 
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { Controller } from 'react-hook-form'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import TextField from '@mui/material/TextField'
+import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker'
+import dayjs from 'dayjs';
 
 import dynamic from 'next/dynamic';
 import { z } from 'zod'
@@ -45,11 +51,20 @@ export default function Form() {
     handleSubmit,
     reset,
     trigger,
+    control,
     formState: { errors, isValid }
   } = useForm<Inputs>({
     resolver: zodResolver(FormDataSchema),
-    mode: 'onChange', // Validate on change for real-time feedback
-    reValidateMode: 'onChange'
+    mode: 'onChange',
+    defaultValues: {
+        // ...other defaults...
+        dateRange: {
+          from: dayjs().format('YYYY-MM-DD'),
+          to: dayjs().add(1, 'day').format('YYYY-MM-DD'),
+        },
+      },
+    reValidateMode: 'onChange',
+    shouldUnregister: false
   })
 
   const processForm: SubmitHandler<Inputs> = async data => {
@@ -101,7 +116,7 @@ export default function Form() {
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
-    <>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
         <div className="fixed inset-0 -z-10 bg-black">
             <Starfield />
         </div>
@@ -213,20 +228,25 @@ export default function Form() {
                         {/* Date of Birth */}
                         <div className='sm:col-span-3'>
                             <label htmlFor='dob' className='block text-sm font-medium leading-6 text-white-900'>
-                            Date of Birth
+                                Date of Birth
                             </label>
                             <div className='mt-2'>
-                            <input
-                                type='date'
-                                id='dob'
-                                {...register('dob', {
-                                valueAsDate: true
-                                })}
-                                className='block w-full rounded-md border border-white-500 py-1.5 text-white-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-sky-600 sm:text-sm sm:leading-6'
-                            />
-                            {errors.dob?.message && (
+                                <Controller
+                                name="dob"
+                                control={control}
+                                render={({ field }) => (
+                                    <input
+                                    type="date"
+                                    id="dob"
+                                    className="block w-full rounded-md border border-white-500 py-1.5 text-white-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-sky-600 sm:text-sm sm:leading-6"
+                                    value={field.value ? field.value.toISOString().substring(0, 10) : ''}
+                                    onChange={e => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                                    />
+                                )}
+                                />
+                                {errors.dob?.message && (
                                 <p className='mt-2 text-sm text-red-400'>{errors.dob.message as string}</p>
-                            )}
+                                )}
                             </div>
                         </div>
                         {/* Nationality */}
@@ -303,44 +323,56 @@ export default function Form() {
                         Tell us about your travel plans.
                         </p>
                         <div className='mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6'>
-                        {/* Departure Date */}
-                        <div className='sm:col-span-3'>
-                            <label htmlFor='departure' className='block text-sm font-medium leading-6 text-white-900'>
-                            Departure Date
-                            </label>
-                            <div className='mt-2'>
-                            <input
-                                type='date'
-                                id='departure'
-                                {...register('departure', {
-                                valueAsDate: true
-                                })}
-                                className='block w-full rounded-md border border-white-500 p py-1.5 text-white-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-sky-600 sm:text-sm sm:leading-6'
-                            />
-                            {errors.departure?.message && (
-                                <p className='mt-2 text-sm text-red-400'>{errors.departure.message as string}</p>
+                        {/* Departure-Return Date Range */}
+                        <Controller
+                            name="dateRange"
+                            control={control}
+                            render={({ field }) => (
+                                <DateRangePicker
+                                value={[
+                                    field.value?.from ? dayjs(field.value.from) : null,
+                                    field.value?.to ? dayjs(field.value.to) : null
+                                ]}
+                                onChange={([from, to]) => {
+                                    field.onChange({
+                                    from: from ? from.format('YYYY-MM-DD') : '',
+                                    to: to ? to.format('YYYY-MM-DD') : ''
+                                    })
+                                }}
+                                slotProps={{
+                                    textField: {
+                                        fullWidth: true,
+                                        placeholder: "MM/DD/YYYY - MM/DD/YYYY",
+                                        sx: {
+                                          // Label color
+                                          "& .MuiInputLabel-root": { color: "white" },
+                                          "& .MuiInputLabel-root.Mui-focused": { color: "white" },
+                              
+                                          // Input text color
+                                          "& .MuiInputBase-input": { color: "white" },
+                              
+                                          // Outlined border color
+                                          "& .MuiOutlinedInput-root": {
+                                            "& fieldset": { borderColor: "white" },
+                                            "&:hover fieldset": { borderColor: "#0ea5e9" }, // Optional: hover color
+                                            "&.Mui-focused fieldset": { borderColor: "#0ea5e9" }, // Optional: focus color
+                                          },
+                              
+                                          // Icon color
+                                          "& .MuiSvgIcon-root": { color: "white" },
+                                        }
+                                      }
+                                }}
+                                />
                             )}
-                            </div>
-                        </div>
-                        {/* Return Date */}
-                        <div className='sm:col-span-3'>
-                            <label htmlFor='return' className='block text-sm font-medium leading-6 text-white-900'>
-                            Return Date
-                            </label>
-                            <div className='mt-2'>
-                            <input
-                                type='date'
-                                id='return'
-                                {...register('return', {
-                                valueAsDate: true
-                                })}
-                                className='block w-full rounded-md border border-white-500 p py-1.5 text-white-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-sky-600 sm:text-sm sm:leading-6'
                             />
-                            {errors.return?.message && (
-                                <p className='mt-2 text-sm text-red-400'>{errors.return.message as string}</p>
-                            )}
-                            </div>
-                        </div>
+                            {errors.dateRange && (
+                            <p className="mt-2 text-sm text-red-400">{errors.dateRange.message}</p>
+                        )}
+                        {errors.dateRange?.to && (
+                        <p className="mt-2 text-sm text-red-400">{errors.dateRange.to.message}</p>
+                        )}
+
                         {/* Accommodation Preference */}
                         <div className='sm:col-span-3'>
                             <label htmlFor='accommodation' className='block text-sm font-medium leading-6 text-white-900'>
@@ -526,6 +558,6 @@ export default function Form() {
             </>
         )}
         </section>
-    </>
+    </LocalizationProvider>
   )
 }
