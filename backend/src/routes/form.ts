@@ -14,5 +14,5 @@ router.post('/', (req: Request, res: Response) => {
 
   res.status(200).json({ message: 'Form submitted successfully 🚀' })
 })
-Wha
+
 export default router
