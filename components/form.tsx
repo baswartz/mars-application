@@ -68,7 +68,7 @@ export default function Form() {
 
   const processForm: SubmitHandler<Inputs> = async data => {
     try {
-      const response = await fetch('https://mars-backend-zicq.onrender.com/api/form', {
+      const response = await fetch('/api/form', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
