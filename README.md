@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Mars Travel Application Form
 
-## Getting Started
+Overview
 
-First, run the development server:
+This project is a multi-stage application form for a fictional Mars travel program, created as part of the Coziitech Software Developer Intern Assessment. It collects and validates user information across three logical stages using modern frontend technologies.
 
-```bash
+Technologies Used
+
+Frontend: Next.js 14, TypeScript, Tailwind CSS, React Hook Form, Zod
+
+Backend: Next.js API Routes (no separate server)
+
+Date Picker: MUI X DateRangePicker (Pro version)
+
+Features
+
+1. Multi-Stage Form Flow
+
+Stage 1: Personal Information
+
+Stage 2: Travel Preferences
+
+Stage 3: Health and Safety
+
+Progress bar with step indication and transitions
+
+2. Form Validation (Zod)
+
+Required fields
+
+Proper format for email and phone
+
+Valid date format and date ranges
+
+Conditional logic (e.g., departure must be before return)
+
+3. Responsive Design
+
+Fully mobile-friendly layout
+
+Styled using Tailwind CSS
+
+Animated transitions with Framer Motion
+
+4. API Route Submission
+
+Form data is submitted to a Next.js API route for processing
+
+API endpoint: /api/form
+
+5. Visual Flair
+
+Animated starfield background for immersive space theme
+
+File Structure
+
+form.tsx - Main form logic and UI
+
+schema.ts - Zod validation schema
+
+pages/api/form.ts - API handler for form submission
+
+Starfield.tsx - Background animation
+
+Instructions to Run Locally
+
+Clone the repo
+
+Install dependencies:
+
+npm install
+
+Run development server:
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit http://localhost:3000 in your browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Hosted on: Vercel
 
-## Learn More
+Frontend and backend live in one unified project via Next.js API routes
 
-To learn more about Next.js, take a look at the following resources:
+Live demo: https://mars-application-frontend.vercel.app/
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Future Improvements
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Add unit tests with Jest or Cypress
 
-## Deploy on Vercel
+Add user authentication
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Save form progress in local storage
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Credits
+
+Submitted by: Benjamin Swartz
+For: Coziitech Software Developer Intern Assessment 2025
