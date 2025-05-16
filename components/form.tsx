@@ -53,11 +53,30 @@ export default function Form() {
     reValidateMode: 'onChange'
   })
 
-  const processForm: SubmitHandler<Inputs> = data => {
-    console.log(data)
-    reset()
-    setSubmitted(true)
+  const processForm: SubmitHandler<Inputs> = async data => {
+    try {
+      const response = await fetch('http://localhost:4000/api/form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+  
+      if (!response.ok) {
+        throw new Error('Failed to submit form')
+      }
+  
+      const result = await response.json()
+      console.log(result.message)
+      reset()
+      setSubmitted(true)
+    } catch (error) {
+      console.error('Form submission error:', error)
+      alert('Something went wrong. Please try again.')
+    }
   }
+  
 
   type FieldName = keyof Inputs
 
