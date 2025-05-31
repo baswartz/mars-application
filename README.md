@@ -94,5 +94,4 @@ Save form progress in local storage
 
 Credits
 
-Submitted by: Benjamin Swartz
-For: Coziitech Software Developer Intern Assessment 2025
+Created by: Benjamin Swartz
